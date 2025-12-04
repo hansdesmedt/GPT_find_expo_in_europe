@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Guide</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Full screen map -->
+    <div id="map"></div>
+
+    <!-- City filter overlay -->
+    <div class="city-filter-overlay">
+        <button id="cityFilterBtn" class="city-filter-btn">
+            <span id="filterLabel">All Cities</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                <path d="M6 9L1 4h10z"/>
+            </svg>
+        </button>
+
+        <!-- City filter dropdown -->
+        <div id="cityFilterDropdown" class="city-filter-dropdown">
+            <div class="filter-header">
+                <strong>Filter by Cities</strong>
+                <button id="clearFilters" class="clear-filters-btn">Clear All</button>
+            </div>
+            <div id="cityCheckboxes" class="city-checkboxes"></div>
+
+            <!-- Add new city section -->
+            <div class="add-city-section">
+                <div class="add-city-header">Add New City</div>
+                <input type="text" id="newCityInput" class="city-autocomplete-input" placeholder="Search for a city...">
+                <button id="addCitySubmitBtn" class="add-city-submit-btn">
+                    <span class="btn-text">Add City</span>
+                    <span class="btn-loader" style="display: none;">
+                        <svg class="spinner-small" viewBox="0 0 50 50">
+                            <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                        </svg>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exhibition sidebar (hidden by default) -->
+    <div id="exhibitionSidebar" class="exhibition-sidebar">
+        <button class="sidebar-close" id="closeSidebar">×</button>
+        <div class="sidebar-content">
+            <h2 id="sidebarTitle">Exhibitions</h2>
+            <div id="exhibitionList" class="exhibition-grid"></div>
+        </div>
+    </div>
+
+    <script src="/js/map.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "expo-finder-europe",
+  "version": "1.0.0",
+  "description": "Find art exhibitions and expos on a map in Belgium and Netherlands",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --env-file=.env app.js",
+    "db:setup": "node src/database/setup.js"
+  },
+  "keywords": ["exhibitions", "museums", "galleries", "map", "art"],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "jsdom": "^27.0.1",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.11.3"
+  }
+}
