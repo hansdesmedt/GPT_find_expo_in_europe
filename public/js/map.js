@@ -192,6 +192,7 @@ async function loadCities() {
             selectedCities = cities.map(c => c.city);
         }
         updateFilterLabel();
+        updateToggleButtonText();
 
         // Add event listeners to checkboxes
         document.querySelectorAll('.city-checkbox').forEach(checkbox => {
@@ -257,6 +258,9 @@ function handleCityFilterChange() {
     // Update filter button label
     updateFilterLabel();
 
+    // Update toggle button text
+    updateToggleButtonText();
+
     // Save state to cookies
     saveState();
 
@@ -277,6 +281,18 @@ function updateFilterLabel() {
         label.textContent = selectedCities[0];
     } else {
         label.textContent = `${selectedCities.length} Cities Selected`;
+    }
+}
+
+// Update the toggle button text
+function updateToggleButtonText() {
+    const toggleBtn = document.getElementById('toggleFilters');
+    const checkedBoxes = document.querySelectorAll('.city-checkbox:checked');
+
+    if (checkedBoxes.length > 0) {
+        toggleBtn.textContent = 'Clear All';
+    } else {
+        toggleBtn.textContent = 'Select All';
     }
 }
 
@@ -434,6 +450,14 @@ function addMarkersToMap(exhibitions) {
                     m.classList.remove('selected');
                 });
 
+                // Remove selected style from all mini-venue-groups
+                document.querySelectorAll('.mini-venue-group').forEach(g => {
+                    g.classList.remove('selected');
+                    g.style.background = '';
+                    g.style.borderLeft = '';
+                    g.style.paddingLeft = '';
+                });
+
                 // Toggle selection
                 if (selectedVenue === key) {
                     // Deselect
@@ -447,6 +471,9 @@ function addMarkersToMap(exhibitions) {
                     document.getElementById('sidebarTitle').textContent = venue.venue_name;
                     openSidebar();
                     map.panTo({ lat: venue.lat, lng: venue.lng });
+
+                    // Highlight the corresponding mini-venue-group
+                    highlightSelectedVenueGroup(venue.lat, venue.lng, true);
                 }
             });
 
@@ -501,12 +528,26 @@ function setupEventListeners() {
         dropdown.classList.toggle('show');
     });
 
-    // Clear filters button
-    document.getElementById('clearFilters').addEventListener('click', (e) => {
+    // Toggle filters button (Select All / Clear All)
+    document.getElementById('toggleFilters').addEventListener('click', (e) => {
         e.stopPropagation();
-        document.querySelectorAll('.city-checkbox').forEach(cb => cb.checked = false);
-        selectedCities = [];
+        const checkedBoxes = document.querySelectorAll('.city-checkbox:checked');
+        const allCheckboxes = document.querySelectorAll('.city-checkbox');
+
+        if (checkedBoxes.length > 0) {
+            // Clear all
+            allCheckboxes.forEach(cb => cb.checked = false);
+            selectedCities = [];
+        } else {
+            // Select all
+            allCheckboxes.forEach(cb => cb.checked = true);
+            selectedCities = Array.from(allCheckboxes).map(cb => cb.value);
+        }
+
         updateFilterLabel();
+        updateToggleButtonText();
+        updateCountryCheckboxes();
+        saveState();
         loadExhibitions();
     });
 
@@ -523,6 +564,37 @@ function setupEventListeners() {
 
     // Prevent dropdown from closing when clicking inside it
     document.getElementById('cityFilterDropdown').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Add city toggle button
+    document.getElementById('addCityToggleBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const addCityPopover = document.querySelector('.add-city-popover');
+        const addCityToggleBtn = document.getElementById('addCityToggleBtn');
+        addCityPopover.classList.toggle('show');
+        addCityToggleBtn.classList.toggle('active');
+
+        // Focus input when opening
+        if (addCityPopover.classList.contains('show')) {
+            document.getElementById('newCityInput').focus();
+        }
+    });
+
+    // Close popover when clicking outside
+    document.addEventListener('click', (e) => {
+        const addCityContainer = document.querySelector('.add-city-container');
+        const addCityPopover = document.querySelector('.add-city-popover');
+        const addCityToggleBtn = document.getElementById('addCityToggleBtn');
+
+        if (!addCityContainer.contains(e.target)) {
+            addCityPopover.classList.remove('show');
+            addCityToggleBtn.classList.remove('active');
+        }
+    });
+
+    // Prevent popover from closing when clicking inside it
+    document.querySelector('.add-city-popover').addEventListener('click', (e) => {
         e.stopPropagation();
     });
 
@@ -558,6 +630,8 @@ async function addNewCity() {
     const btn = document.getElementById('addCitySubmitBtn');
     const btnText = btn.querySelector('.btn-text');
     const btnLoader = btn.querySelector('.btn-loader');
+    const addCityToggleBtn = document.getElementById('addCityToggleBtn');
+    const addCityPopover = document.querySelector('.add-city-popover');
 
     // Add tooltip to loader
     btnLoader.setAttribute('title', `Indexing ${city}... This may take a few minutes.`);
@@ -567,6 +641,11 @@ async function addNewCity() {
     input.disabled = true;
     btnText.style.display = 'none';
     btnLoader.style.display = 'block';
+
+    // Disable the + button and hide the add city popover
+    addCityToggleBtn.disabled = true;
+    addCityToggleBtn.classList.remove('active');
+    addCityPopover.classList.remove('show');
 
     // Clear input and stored city name immediately
     input.value = '';
@@ -602,6 +681,7 @@ async function addNewCity() {
         btnLoader.style.display = 'none';
         btn.disabled = false;
         input.disabled = false;
+        addCityToggleBtn.disabled = false;
     }
 }
 
@@ -721,6 +801,22 @@ function toggleCountrySelection(countryId) {
     handleCityFilterChange();
 }
 
+// Update country checkboxes based on city selections
+function updateCountryCheckboxes() {
+    const countries = document.querySelectorAll('.country-group');
+
+    countries.forEach(countryGroup => {
+        const countryCheckbox = countryGroup.querySelector('.country-checkbox');
+        const countryId = countryCheckbox.dataset.country;
+        const citiesContainer = document.getElementById(`country-cities-${countryId}`);
+        const cityCheckboxes = citiesContainer.querySelectorAll('.city-checkbox');
+
+        // Check if all cities in this country are selected
+        const allChecked = Array.from(cityCheckboxes).every(cb => cb.checked);
+        countryCheckbox.checked = allChecked;
+    });
+}
+
 // Toggle city details - show mini exhibition list
 async function toggleCityDetails(cityName) {
     const detailsId = `city-details-${cityName.replace(/\s+/g, '-')}`;
@@ -762,7 +858,12 @@ async function toggleCityDetails(cityName) {
             venueMap.forEach((venue, venueId) => {
                 const shortVenue = venue.venue_name.length > 30 ? venue.venue_name.substring(0, 30) + '...' : venue.venue_name;
 
-                html += `<div class="mini-venue-group">`;
+                html += `<div class="mini-venue-group"
+                              data-venue-id="${venueId}"
+                              data-lat="${venue.latitude}"
+                              data-lng="${venue.longitude}"
+                              onmouseenter="highlightMarker(${venue.latitude}, ${venue.longitude}, true)"
+                              onmouseleave="highlightMarker(${venue.latitude}, ${venue.longitude}, false)">`;
                 html += `<div class="mini-venue-name">${escapeHtml(shortVenue)}</div>`;
 
                 venue.exhibitions.forEach(ex => {
@@ -770,9 +871,7 @@ async function toggleCityDetails(cityName) {
                     html += `<div class="mini-exhibition"
                                   data-venue-id="${venueId}"
                                   data-lat="${ex.latitude}"
-                                  data-lng="${ex.longitude}"
-                                  onmouseenter="highlightMarker(${ex.latitude}, ${ex.longitude}, true)"
-                                  onmouseleave="highlightMarker(${ex.latitude}, ${ex.longitude}, false)">
+                                  data-lng="${ex.longitude}">
                         ${escapeHtml(shortTitle)}
                     </div>`;
                 });
@@ -905,20 +1004,51 @@ function highlightMarker(lat, lng, highlight) {
 function highlightListItems(lat, lng, highlight) {
     if (!lat || !lng) return;
 
-    const listItems = document.querySelectorAll('.mini-exhibition');
-    listItems.forEach(item => {
-        const itemLat = parseFloat(item.dataset.lat);
-        const itemLng = parseFloat(item.dataset.lng);
+    const venueGroups = document.querySelectorAll('.mini-venue-group');
+    venueGroups.forEach(group => {
+        // Check if any mini-exhibition in this group matches the coordinates
+        const exhibitions = group.querySelectorAll('.mini-exhibition');
+        const hasMatch = Array.from(exhibitions).some(item => {
+            const itemLat = parseFloat(item.dataset.lat);
+            const itemLng = parseFloat(item.dataset.lng);
+            return Math.abs(itemLat - lat) < 0.0001 && Math.abs(itemLng - lng) < 0.0001;
+        });
 
-        if (Math.abs(itemLat - lat) < 0.0001 && Math.abs(itemLng - lng) < 0.0001) {
+        if (hasMatch) {
             if (highlight) {
-                item.style.background = 'rgba(255, 87, 34, 0.1)';
-                item.style.borderLeft = '3px solid #ff5722';
-                item.style.paddingLeft = '9px';
+                group.style.background = 'rgba(255, 87, 34, 0.1)';
+                group.style.borderLeft = '3px solid #ff5722';
+                group.style.paddingLeft = '3px';
             } else {
-                item.style.background = '';
-                item.style.borderLeft = '';
-                item.style.paddingLeft = '';
+                // Only remove hover styles if the venue is not selected
+                const venueId = exhibitions.length > 0 ? exhibitions[0].dataset.venueId : null;
+                if (selectedVenue !== venueId) {
+                    group.style.background = '';
+                    group.style.borderLeft = '';
+                    group.style.paddingLeft = '';
+                }
+            }
+        }
+    });
+}
+
+// Highlight selected venue group
+function highlightSelectedVenueGroup(lat, lng, select) {
+    if (!lat || !lng) return;
+
+    const venueGroups = document.querySelectorAll('.mini-venue-group');
+    venueGroups.forEach(group => {
+        const groupLat = parseFloat(group.dataset.lat);
+        const groupLng = parseFloat(group.dataset.lng);
+
+        if (Math.abs(groupLat - lat) < 0.0001 && Math.abs(groupLng - lng) < 0.0001) {
+            if (select) {
+                group.classList.add('selected');
+            } else {
+                group.classList.remove('selected');
+                group.style.background = '';
+                group.style.borderLeft = '';
+                group.style.paddingLeft = '';
             }
         }
     });
@@ -957,6 +1087,7 @@ window.highlightMarker = highlightMarker;
 window.highlightListItems = highlightListItems;
 window.highlightMarkerFromCard = highlightMarkerFromCard;
 window.highlightExhibitionCards = highlightExhibitionCards;
+window.highlightSelectedVenueGroup = highlightSelectedVenueGroup;
 
 // Load Google Maps API with key from backend
 async function loadGoogleMaps() {

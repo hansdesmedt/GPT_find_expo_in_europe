@@ -26,23 +26,26 @@
         <div id="cityFilterDropdown" class="city-filter-dropdown">
             <div class="filter-header">
                 <strong>Filter by Cities</strong>
-                <button id="clearFilters" class="clear-filters-btn">Clear All</button>
+                <div class="filter-header-actions">
+                    <button id="toggleFilters" class="clear-filters-btn">Select All</button>
+                    <div class="add-city-container">
+                        <button id="addCityToggleBtn" class="add-city-toggle-btn" title="Add new city">+</button>
+                        <!-- Add new city popover -->
+                        <div class="add-city-popover">
+                            <input type="text" id="newCityInput" class="city-autocomplete-input" placeholder="Search for a city...">
+                            <button id="addCitySubmitBtn" class="add-city-submit-btn">
+                                <span class="btn-text">Add</span>
+                                <span class="btn-loader" style="display: none;">
+                                    <svg class="spinner-small" viewBox="0 0 50 50">
+                                        <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="cityCheckboxes" class="city-checkboxes"></div>
-
-            <!-- Add new city section -->
-            <div class="add-city-section">
-                <div class="add-city-header">Add New City</div>
-                <input type="text" id="newCityInput" class="city-autocomplete-input" placeholder="Search for a city...">
-                <button id="addCitySubmitBtn" class="add-city-submit-btn">
-                    <span class="btn-text">Add City</span>
-                    <span class="btn-loader" style="display: none;">
-                        <svg class="spinner-small" viewBox="0 0 50 50">
-                            <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
-                        </svg>
-                    </span>
-                </button>
-            </div>
         </div>
     </div>
 

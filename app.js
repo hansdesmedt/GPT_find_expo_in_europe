@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 3000;
 // Initialize database on startup
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🔌 Database URL present: ${!!process.env.DATABASE_URL}`);
+console.log(`🔌 PORT from env: ${process.env.PORT}`);
+console.log(`🔌 PORT being used: ${PORT}`);
 
 if (process.env.NODE_ENV === 'production') {
   console.log('🚀 Production mode - initializing database...');
@@ -49,9 +51,12 @@ app.get('/health', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 Expo Finder Europe server running on port ${PORT}`);
-  console.log(`📍 Local: http://localhost:${PORT}\n`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  const address = server.address();
+  console.log(`\n🚀 Expo Finder Europe server running`);
+  console.log(`📍 Address: ${address.address}:${address.port}`);
+  console.log(`📍 Port: ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV}\n`);
 });
 
 // Graceful shutdown
