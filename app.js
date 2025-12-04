@@ -2,12 +2,29 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import apiRoutes from './src/routes/api.js';
+import { initializeDatabase } from './src/database/init.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Initialize database on startup
+console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔌 Database URL present: ${!!process.env.DATABASE_URL}`);
+
+if (process.env.NODE_ENV === 'production') {
+  console.log('🚀 Production mode - initializing database...');
+  try {
+    await initializeDatabase();
+  } catch (error) {
+    console.error('❌ Failed to initialize database. App may not work correctly.');
+    console.error('Error:', error.message);
+  }
+} else {
+  console.log('💻 Development mode - skipping automatic database initialization');
+}
 
 // Middleware
 app.use(express.json());

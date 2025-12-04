@@ -1,0 +1,48 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files (set via Railway)
+.env
+.env.local
+.env.*.local
+
+# Git files
+.git/
+.gitignore
+
+# Documentation
+README.md
+SETUP.md
+QUICK_START.md
+*.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
